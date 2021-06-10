@@ -22,7 +22,6 @@ class Maze:
             self._maze[0][n] = True
             self._maze[self._cols - 1][n] = True
         self.recursive_maze(0, 0, self._cols - 1, self._rows - 1)
-        print("done")
 
     def recursive_maze(self, x1, y1, x2, y2):
         # pick random wall coordinates and place them on the maze (they need to be even)
