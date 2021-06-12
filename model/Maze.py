@@ -1,6 +1,4 @@
 import random
-
-
 class Maze:
     """
     initializer for the maze class, width and height must be odd.
@@ -22,6 +20,9 @@ class Maze:
             self._maze[0][n] = True
             self._maze[self._cols - 1][n] = True
         self.recursive_maze(0, 0, self._cols - 1, self._rows - 1)
+
+    # def __init__(self, board):
+    #     self._maze = board
 
     def recursive_maze(self, x1, y1, x2, y2):
         # pick random wall coordinates and place them on the maze (they need to be even)
@@ -63,11 +64,59 @@ class Maze:
         if (x2 - wall_x > 3) and (y2 - wall_y > 3):
             self.recursive_maze(wall_x, wall_y, x2, y2)
 
-    def print_maze(self):
-        for x in self._maze:
-            for y in x:
-                if y:
+    def solve_maze_dfs(self, xs, ys, xf, yf):
+        curr = [xs, ys]
+        visited = [[False for _ in range(self._rows)] for _ in range(self._cols)]
+        visited[xs][ys] = True
+        tile_queue = []
+        came_from = [[[0, 0] for _ in range(self._rows)] for _ in range(self._cols)]
+        while not ((curr[0] == xf) and (curr[1] == yf)):
+            visited[curr[0]][curr[1]] = True
+            adjacent = self.get_viable_adjacent(curr, visited)
+            for pair in adjacent:
+                came_from[pair[0]][pair[1]] = curr
+            tile_queue.extend(adjacent)
+            if len(tile_queue) != 0:
+                curr = tile_queue.pop()
+            else:
+                print("solution not found")
+                return
+
+        solution = [[xf, yf]]
+        curr = [xf, yf]
+        while not ((curr[0] == xs) and (curr[1] == ys)):
+            solution.append(came_from[curr[0]][curr[1]])
+            curr = came_from[curr[0]][curr[1]]
+        return solution
+
+    def get_viable_adjacent(self, curr, visited):
+        ret = []
+        if not (self._maze[curr[0]][curr[1] - 1]) and not (visited[curr[0]][curr[1] - 1]):
+            ret.append([curr[0], curr[1] - 1])
+        if not (self._maze[curr[0] - 1][curr[1]]) and not (visited[curr[0] - 1][curr[1]]):
+            ret.append([curr[0] - 1, curr[1]])
+        if not (self._maze[curr[0]][curr[1] + 1]) and not (visited[curr[0]][curr[1] + 1]):
+            ret.append([curr[0], curr[1] + 1])
+        if not (self._maze[curr[0] + 1][curr[1]]) and not (visited[curr[0] + 1][curr[1]]):
+            ret.append([curr[0] + 1, curr[1]])
+        return ret
+
+    def print_maze(self, solution=None):
+        if solution is None:
+            solution = []
+        for x in range(0, self._rows):
+            for y in range(0, self._cols):
+                if self._maze[x][y]:
                     print("@", end="")
+                elif self.solution_contains(solution, x, y):
+                    print("*", end="")
                 else:
                     print(" ", end="")
             print("\n", end="")
+
+    def solution_contains(self, solution, x, y):
+        for pair in solution:
+            if (pair[0] == x) and (pair[1] == y):
+                return True
+        else:
+            return False
